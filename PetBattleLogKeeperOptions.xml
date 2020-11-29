@@ -23,7 +23,6 @@
             </Anchors>
             <Scripts>
                 <OnLoad function="PetBattleLogKeeperOptionsAutoLog_OnLoad" />
-                <OnClick function="PetBattleLogKeeperOptionsControl_OnChanged" />
             </Scripts>
         </CheckButton>
         <CheckButton name="$parentDontAutoLogPve" inherits="InterfaceOptionsCheckButtonTemplate">
@@ -32,7 +31,6 @@
             </Anchors>
             <Scripts>
                 <OnLoad function="PetBattleLogKeeperOptionsDontAutoLogPve_OnLoad" />
-                <OnClick function="PetBattleLogKeeperOptionsControl_OnChanged" />
             </Scripts>
         </CheckButton>
         <CheckButton name="$parentAutoOpenWindow" inherits="InterfaceOptionsCheckButtonTemplate">
@@ -41,7 +39,6 @@
             </Anchors>
             <Scripts>
                 <OnLoad function="PetBattleLogKeeperOptionsAutoOpenWindow_OnLoad" />
-                <OnClick function="PetBattleLogKeeperOptionsControl_OnChanged" />
             </Scripts>
         </CheckButton>
         <CheckButton name="$parentDontSaveFullLog" inherits="InterfaceOptionsCheckButtonTemplate">
@@ -50,7 +47,6 @@
             </Anchors>
             <Scripts>
                 <OnLoad function="PetBattleLogKeeperOptionsDontSaveFullLog_OnLoad" />
-                <OnClick function="PetBattleLogKeeperOptionsControl_OnChanged" />
             </Scripts>
         </CheckButton>
     </Frames>
