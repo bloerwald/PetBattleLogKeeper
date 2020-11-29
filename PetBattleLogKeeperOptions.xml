@@ -1,0 +1,59 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\..\FrameXML\UI.xsd">
+
+<Script file="PetBattleLogKeeperOptions.lua" />
+
+<Frame name="PetBattleLogKeeperOptions" hidden="true">
+    <Layers>
+        <Layer level="ARTWORK">
+            <FontString name="$parentTitle" inherits="GameFontNormalLarge" parentKey="title">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="16" y="-16" />
+                </Anchors>
+            </FontString>
+        </Layer>
+    </Layers>
+    <Scripts>
+        <OnLoad function="PetBattleLogKeeperOptions_OnLoad" />
+        <OnShow function="PetBattleLogKeeperOptions_OnShow" />
+    </Scripts>
+    <Frames>
+        <CheckButton name="$parentAutoLog" inherits="InterfaceOptionsCheckButtonTemplate">
+            <Anchors>
+                <Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT" x="0" y="-48" />
+            </Anchors>
+            <Scripts>
+                <OnLoad function="PetBattleLogKeeperOptionsAutoLog_OnLoad" />
+                <OnClick function="PetBattleLogKeeperOptionsControl_OnChanged" />
+            </Scripts>
+        </CheckButton>
+        <CheckButton name="$parentDontAutoLogPve" inherits="InterfaceOptionsCheckButtonTemplate">
+            <Anchors>
+                <Anchor point="TOPLEFT" relativeTo="$parentAutoLog" relativePoint="BOTTOMLEFT" x="0" y="-16" />
+            </Anchors>
+            <Scripts>
+                <OnLoad function="PetBattleLogKeeperOptionsDontAutoLogPve_OnLoad" />
+                <OnClick function="PetBattleLogKeeperOptionsControl_OnChanged" />
+            </Scripts>
+        </CheckButton>
+        <CheckButton name="$parentAutoOpenWindow" inherits="InterfaceOptionsCheckButtonTemplate">
+            <Anchors>
+                <Anchor point="TOPLEFT" relativeTo="$parentDontAutoLogPve" relativePoint="BOTTOMLEFT" x="0" y="-16" />
+            </Anchors>
+            <Scripts>
+                <OnLoad function="PetBattleLogKeeperOptionsAutoOpenWindow_OnLoad" />
+                <OnClick function="PetBattleLogKeeperOptionsControl_OnChanged" />
+            </Scripts>
+        </CheckButton>
+        <CheckButton name="$parentDontSaveFullLog" inherits="InterfaceOptionsCheckButtonTemplate">
+            <Anchors>
+                <Anchor point="TOPLEFT" relativeTo="$parentAutoOpenWindow" relativePoint="BOTTOMLEFT" x="0" y="-16" />
+            </Anchors>
+            <Scripts>
+                <OnLoad function="PetBattleLogKeeperOptionsDontSaveFullLog_OnLoad" />
+                <OnClick function="PetBattleLogKeeperOptionsControl_OnChanged" />
+            </Scripts>
+        </CheckButton>
+    </Frames>
+</Frame>
+
+</Ui>

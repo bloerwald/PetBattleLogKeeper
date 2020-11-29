@@ -1,0 +1,385 @@
+<Ui>
+
+   <Texture name="PetBattleLogKeeperPetTemplate" file="Interface\Icons\INV_Misc_QuestionMark" virtual="true">
+      <Size x="22" y="22"/>
+      <!-- <TexCoords left="0.075" right="0.925" top="0.075" bottom="0.925"/> -->
+   </Texture>
+
+   <Button name="PetBattleLogKeeperListButtonTemplate" virtual="true">
+      <Size x="600" y="24"/>
+      <Layers>
+         <Layer level="BACKGROUND">
+            <!-- texture shown when the log is selected -->
+            <Texture parentKey="Selected" hidden="true">
+               <Color r="1" g="1" b="1" a="0.15"/>
+            </Texture>
+         </Layer>
+         <Layer level="ARTWORK">
+            <!-- player pets listButton.Pets[1] through listButton.Pets[3] -->
+            <Texture parentArray="Pets" inherits="PetBattleLogKeeperPetTemplate">
+               <Anchors>
+                  <Anchor point="LEFT" x="10" y="0"/>
+               </Anchors>
+            </Texture>
+            <Texture parentArray="Pets" inherits="PetBattleLogKeeperPetTemplate">
+               <Anchors>
+                  <Anchor point="LEFT" x="34" y="0"/>
+               </Anchors>
+            </Texture>
+            <Texture parentArray="Pets" inherits="PetBattleLogKeeperPetTemplate">
+               <Anchors>
+                  <Anchor point="LEFT" x="58" y="0"/>
+               </Anchors>
+            </Texture>
+            <!-- "vs" text between player and enemy pets -->
+            <FontString inherits="GameFontHighlight" text="vs">
+               <Anchors>
+                  <Anchor point="CENTER" relativePoint="LEFT" x="94" y="0"/>
+               </Anchors>
+            </FontString>
+            <!-- enemy pets listButton.Pets[4] through listButton.Pets[6] -->
+            <Texture parentArray="Pets" inherits="PetBattleLogKeeperPetTemplate">
+               <Anchors>
+                  <Anchor point="LEFT" x="106" y="0"/>
+               </Anchors>
+            </Texture>
+            <Texture parentArray="Pets" inherits="PetBattleLogKeeperPetTemplate">
+               <Anchors>
+                  <Anchor point="LEFT" x="130" y="0"/>
+               </Anchors>
+            </Texture>
+            <Texture parentArray="Pets" inherits="PetBattleLogKeeperPetTemplate">
+               <Anchors>
+                  <Anchor point="LEFT" x="154" y="0"/>
+               </Anchors>
+            </Texture>
+            <!-- timestamp -->
+            <FontString parentKey="Timestamp" inherits="ChatFontNormal" text="08/04/17 06:55:13">
+               <Size x="125" y="24"/>
+               <Anchors>
+                  <Anchor point="LEFT" x="183" y="0"/>
+               </Anchors>
+            </FontString>
+            <!-- duration -->
+            <FontString parentKey="Duration" inherits="ChatFontNormal" text="98m 10s">
+               <Size x="64" y="24"/>
+               <Anchors>
+                  <Anchor point="LEFT" relativeKey="$parent.Timestamp" relativePoint="RIGHT" x="2" y="0"/>
+               </Anchors>
+            </FontString>
+            <!-- rounds -->
+            <FontString parentKey="Rounds" inherits="ChatFontNormal" text="8">
+               <Size x="50" y="24"/>
+               <Anchors>
+                  <Anchor point="LEFT" relativeKey="$parent.Duration" relativePoint="RIGHT" x="2" y="0"/>
+               </Anchors>
+            </FontString>
+            <!-- result -->
+            <FontString parentKey="Result" inherits="ChatFontNormal" text="Won">
+               <Size x="120" y="24"/>
+               <Anchors>
+                  <Anchor point="LEFT" relativeKey="$parent.Rounds" relativePoint="RIGHT" x="2" y="0"/>
+               </Anchors>
+            </FontString>
+            <!-- PVP -->
+            <FontString parentKey="Pvp" inherits="ChatFontNormal" text="PVP">
+               <Size x="60" y="24"/>
+               <Anchors>
+                  <Anchor point="LEFT" relativeKey="$parent.Result" relativePoint="RIGHT" x="2" y="0"/>
+               </Anchors>
+            </FontString>
+         </Layer>
+         <Layer level="HIGHLIGHT">
+            <Texture>
+               <Anchors>
+                  <Anchor point="TOPLEFT" x="1" y="0"/>
+                  <Anchor point="BOTTOMRIGHT"/>
+               </Anchors>
+               <Color r="0.25" g="0.75" b="1" a="0.15"/>
+            </Texture>
+         </Layer>
+      </Layers>
+      <Scripts>
+         <OnClick>
+            PetBattleLogKeeper.ListButtonOnClick(self,button)
+         </OnClick>
+      </Scripts>
+   </Button>
+
+   <Frame name="PetBattleLogKeeper" parent="UIParent" clampedToScreen="true" enableMouse="true" movable="true" resizable="true" toplevel="true" inherits="BasicFrameTemplate" hidden="true">
+      <Size x="640" y="800"/>
+      <Anchors>
+         <Anchor point="CENTER"/>
+      </Anchors>
+      <ResizeBounds>
+         <minResize x="640" y="320"/> <!-- make sure x is same width as parent frame above -->
+         <maxResize x="640" y="800"/>
+      </ResizeBounds>
+      <Frames>
+
+         <!-- this is the list portion at the top where teams and their summary are displayed -->
+         <Frame parentKey="ListFrame" inherits="InsetFrameTemplate">
+            <Size x="360" y="800"/> <!-- to allow enough buttons made for a changing height, giving this the max height -->
+            <Anchors>
+               <Anchor point="TOPLEFT" x="4" y="-48"/>
+               <!-- UpdateUI will give this frame a bottom anchor -->
+               <!-- <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" x="-6" y="-400"/> -->
+            </Anchors>
+            <Frames>
+               <ScrollFrame parentKey="ScrollFrame" inherits="HybridScrollFrameTemplate">
+                  <Size x="360" y="400"/> <!-- alternative to above would be to set this max height and removing bottom anchor;
+                     but since above BOTTOMRIGHT anchor being set anyway, above was chosen -->
+                  <Anchors>
+                     <Anchor point="TOPLEFT" x="4" y="-4"/>
+                     <Anchor point="BOTTOMRIGHT" x="-4" y="4"/>
+                  </Anchors>
+                  <Frames>
+                     <Slider inherits="HybridScrollBarTrimTemplate" parentKey="ScrollBar">
+                        <Anchors>
+                           <Anchor point="TOPRIGHT" x="2" y="-14"/>
+                           <Anchor point="BOTTOMRIGHT" x="2" y="13"/>
+                        </Anchors>
+                     </Slider>
+                  </Frames>
+               </ScrollFrame>
+            </Frames>
+            <Layers>
+               <Layer level="ARTWORK">
+                  <!-- headers across top of list are very simple -->
+                  <FontString inherits="GameFontNormal" text="Your Pets">
+                     <Anchors>
+                        <Anchor point="BOTTOM" relativePoint="TOPLEFT" x="48" y="2"/>
+                     </Anchors>
+                  </FontString>
+                  <FontString inherits="GameFontNormal" text="Opponent">
+                     <Anchors>
+                        <Anchor point="BOTTOM" relativePoint="TOPLEFT" x="145" y="2"/>
+                     </Anchors>
+                  </FontString>
+                  <FontString inherits="GameFontNormal" text="Timestamp">
+                     <Anchors>
+                        <Anchor point="BOTTOM" relativePoint="TOPLEFT" x="250" y="2"/>
+                     </Anchors>
+                  </FontString>
+                  <FontString inherits="GameFontNormal" text="Duration">
+                     <Anchors>
+                        <Anchor point="BOTTOM" relativePoint="TOPLEFT" x="346" y="2"/>
+                     </Anchors>
+                  </FontString>
+                  <FontString inherits="GameFontNormal" text="Rounds">
+                     <Anchors>
+                        <Anchor point="BOTTOM" relativePoint="TOPLEFT" x="405" y="2"/>
+                     </Anchors>
+                  </FontString>
+                  <FontString inherits="GameFontNormal" text="Result">
+                     <Anchors>
+                        <Anchor point="BOTTOM" relativePoint="TOPLEFT" x="488" y="2"/>
+                     </Anchors>
+                  </FontString>
+                  <FontString inherits="GameFontNormal" text="PVE/PVP">
+                     <Anchors>
+                        <Anchor point="BOTTOM" relativePoint="TOPLEFT" x="580" y="2"/>
+                     </Anchors>
+                  </FontString>
+               </Layer>
+            </Layers>
+         </Frame> <!-- ListFrame -->
+
+         <!-- this is the log portion in the bottom where the battle logs are displayed -->
+         <Frame parentKey="LogFrame" inherits="InsetFrameTemplate">
+            <Anchors>
+               <Anchor point="TOPLEFT" relativeKey="$parent.ListFrame" relativePoint="BOTTOMLEFT" x="0" y="-2"/>
+               <Anchor point="BOTTOMRIGHT" x="-6" y="26"/>
+            </Anchors>
+            <Frames>
+               <ScrollFrame parentKey="ScrollFrame" name="PetBattleLogKeeperScrollFrame" inherits="UIPanelScrollFrameTemplate">
+                  <Size x="500" height="500"/> <!-- make this width 40 less than parent frame width -->
+                  <Anchors>
+                     <Anchor point="TOPLEFT" x="4" y="-4"/>
+                     <Anchor point="BOTTOMRIGHT" x="-4" y="4"/>
+                  </Anchors>
+                  <ScrollChild>
+                     <!-- the log is put into an editbox for potential copy-paste later -->
+                     <!-- a ScrollingMessageFrame would be fine too -->
+                     <EditBox parentKey="EditBox" multiLine="true" autoFocus="false">
+                        <Size x="500" y="500"/> <!-- make this width 40 less than parent frame width -->
+                        <Anchors>
+                           <Anchor point="TOPLEFT"/>
+                        </Anchors>
+                        <FontString inherits="ChatFontNormal"/>
+                        <TextInsets left="4" right="4" top="6" bottom="6"/>
+                        <Scripts>
+                           <OnEditFocusGained>
+                              self:ClearFocus() -- this prevents editbox from getting focus
+                              -- (with all the inline textures, cursor positioning will appear very buggy if focus permitted)
+                           </OnEditFocusGained>
+                        </Scripts>
+                     </EditBox>
+                  </ScrollChild>
+                  <!-- i'm not proud of this! creating textures from HybridScrollBarTrimTemplate to make scrollbars look the same -->
+                  <Layers>
+                     <Layer level="BACKGROUND">
+                        <Texture name="$parentBG" setAllPoints="true" hidden="true" parentKey="trackBG">
+                           <Color r="0" g="0" b="0" a=".85"/>
+                        </Texture>
+                     </Layer>
+                     <Layer level="ARTWORK">
+                        <Texture name="$parentTop" parentKey="Top" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
+                           <Size x="24" y="48"/>
+                           <Anchors> <!-- dislike this scrollframe since it needs named elements :( -->
+                              <Anchor point="TOPLEFT" relativeTo="PetBattleLogKeeperScrollFrameScrollBarScrollUpButton" x="-4" y="3"/>
+                           </Anchors>
+                           <TexCoords left="0" right="0.45" top="0" bottom=".20"/>
+                        </Texture>
+                        <Texture name="$parentBottom" parentKey="Bottom" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
+                           <Size x="24" y="64"/>
+                           <Anchors>
+                              <Anchor point="BOTTOMLEFT" relativeTo="PetBattleLogKeeperScrollFrameScrollBarScrollDownButton" x="-4" y="-2"/>
+                           </Anchors>
+                           <TexCoords left="0.515625" right="0.97" top="0.1440625" bottom="0.4140625"/>
+                        </Texture>
+                        <Texture name="$parentMiddle" parentKey="Middle" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
+                           <Anchors>
+                              <Anchor point="TOPLEFT" relativeTo="$parentTop" relativePoint="BOTTOMLEFT"/>
+                              <Anchor point="BOTTOMRIGHT" relativeTo="$parentBottom" relativePoint="TOPRIGHT"/>
+                           </Anchors>
+                           <TexCoords left="0" right="0.45" top="0.1640625" bottom="1"/>
+                        </Texture>
+                     </Layer>	
+                  </Layers>
+                  <Scripts>
+                     <OnLoad>
+                        -- adjust scrollbar position to mirror the hybridscrollframe's bar
+                        self.ScrollBar:ClearAllPoints()
+                        self.ScrollBar:SetPoint("TOPLEFT",self,"TOPRIGHT",-16,-16)
+                        self.ScrollBar:SetPoint("BOTTOMLEFT",self,"BOTTOMRIGHT",-16,15)
+                     </OnLoad>
+                  </Scripts>
+               </ScrollFrame>
+            </Frames>
+         </Frame> <!-- LogFrame -->
+
+         <!-- these are the red panel buttons along the bottom of the window -->
+         <!-- MagicButtonTemplate magically adds the little bracket accents to make it seem inset into the window -->
+
+         <!-- Close Button -->
+			<Button inherits="MagicButtonTemplate" text="CLOSE">
+				<Size x="128" y="22"/>
+				<Anchors>
+					<Anchor point="BOTTOMRIGHT"/>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						PetBattleLogKeeper:Hide()
+					</OnClick>
+				</Scripts>
+			</Button>
+         <!-- Delete Button -->
+         <Button parentKey="DeleteButton" inherits="MagicButtonTemplate" text="DELETE">
+            <Size x="128" y="22"/>
+            <Anchors>
+               <Anchor point="BOTTOMLEFT"/>
+            </Anchors>
+            <Scripts>
+               <OnClick>
+                  PetBattleLogKeeper:DeleteButtonOnClick()
+               </OnClick>
+            </Scripts>
+         </Button>
+         <!-- Save Button -->
+         <Button parentKey="SaveButton" inherits="MagicButtonTemplate" text="Save Battle">
+            <Size x="150" y="22"/>
+            <Anchors>
+               <Anchor point="BOTTOM"/>
+            </Anchors>
+            <Scripts>
+               <OnClick>
+                  PetBattleLogKeeper:SaveButtonOnClick()
+               </OnClick>
+            </Scripts>
+         </Button>
+
+         <!-- resize grip across bottom of the window to resize height of window -->
+			<Button parentKey="ResizeGrip">
+				<Size x="0" y="12"/>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" x="4" y="-1"/>
+					<Anchor point="TOPRIGHT" relativePoint="BOTTOMRIGHT" x="-4" y="-1"/>
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture file="Interface\Buttons\UI-Silver-Button-Up">
+							<Size x="12" y="12"/>
+							<Anchors>
+								<Anchor point="LEFT"/>
+							</Anchors>
+							<TexCoords left="0" right="0.09375" top="0.4375" bottom="0.8125"/>
+						</Texture>
+						<Texture file="Interface\Buttons\UI-Silver-Button-Up">
+							<Size x="12" y="12"/>
+							<Anchors>
+								<Anchor point="RIGHT"/>
+							</Anchors>
+							<TexCoords left="0.53125" right="0.625" top="0.4375" bottom="0.8125"/>
+						</Texture>
+						<Texture file="Interface\Buttons\UI-Silver-Button-Up">
+							<Size x="0" y="12"/>
+							<Anchors>
+								<Anchor point="LEFT" x="12" y="0"/>
+								<Anchor point="RIGHT" x="-12" y="0"/>
+							</Anchors>
+							<TexCoords left="0.09375" right="0.53125" top="0.4375" bottom="0.8125"/>
+						</Texture>
+					</Layer>
+				</Layers>
+				<NormalTexture>
+					<Size x="0" y="2"/>
+					<Anchors>
+						<Anchor point="LEFT" x="6" y="2"/>
+						<Anchor point="RIGHT" x="-6" y="2"/>
+					</Anchors>
+					<Color r="0.25" g="0.25" b="0.25"/>
+				</NormalTexture>
+				<HighlightTexture alphaMode="ADD">
+					<Size x="0" y="2"/>
+					<Anchors>
+						<Anchor point="LEFT" x="6" y="2"/>
+						<Anchor point="RIGHT" x="-6" y="2"/>
+					</Anchors>
+					<Color r="0.25" g="0.25" b="0.25"/>
+				</HighlightTexture>
+				<PushedTexture>
+					<Size x="0" y="2"/>
+					<Anchors>
+						<Anchor point="LEFT" x="6" y="2"/>
+						<Anchor point="RIGHT" x="-6" y="2"/>
+					</Anchors>
+					<Color r="0.5" g="0.5" b="0.5"/>
+				</PushedTexture>
+				<Scripts>
+					<OnMouseDown>
+                  self:OnMouseDown() -- note this is frame.ResizeGrip
+					</OnMouseDown>
+					<OnMouseUp>
+                  self:OnMouseUp()
+					</OnMouseUp>
+				</Scripts>
+			</Button> <!-- ResizeGrip -->
+
+      </Frames>
+      <Scripts>
+         <OnMouseDown>
+            self:OnMouseDown()
+         </OnMouseDown>
+         <OnMouseUp>
+            self:OnMouseUp()
+         </OnMouseUp>
+         <OnSizeChanged>
+            if self.OnSizeChanged then -- this is fired before lua has a chance to load (we don't care about this then!)
+               self:OnSizeChanged(w,h)
+            end
+         </OnSizeChanged>
+      </Scripts>
+   </Frame>
+
+</Ui>

@@ -1,0 +1,5 @@
+<Bindings>
+   <Binding name="PETBATTLELOGKEEPER_TOGGLE" header="PETBATTLELOGKEEPER" category="ADDONS">
+      PetBattleLogKeeper:Toggle()
+   </Binding>
+</Bindings>
