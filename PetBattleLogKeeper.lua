@@ -80,10 +80,13 @@ function frame:PLAYER_LOGIN()
   -- setup savedvar settings and values if they don't exist
   PetBattleLogKeeperSettings = PetBattleLogKeeperSettings or {}
   settings = PetBattleLogKeeperSettings
-  settings.AutoLog = settings.AutoLog or true
-  settings.DontAutoLogPve = settings.DontAutoLogPve or true
-  settings.AutoOpenWindow = settings.AutoOpenWindow or false
-  settings.DontSaveFullLog = settings.DontSaveFullLog or false
+  local set_default = function(name, value)
+    if settings[name] == nil then settings[name] = value end
+  end
+  set_default("AutoLog", true)
+  set_default("DontAutoLogPve", true)
+  set_default("AutoOpenWindow", false)
+  set_default("DontSaveFullLog", false)
 
   frame:WipeLastFight()
   frame.TitleText:SetText("Pet Battle Log Keeper")
