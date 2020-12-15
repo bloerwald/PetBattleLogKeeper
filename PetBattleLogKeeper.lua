@@ -36,7 +36,8 @@
 
 ]]
 
-local settings -- becomes savedvariable PetBattleLogKeeperSettings
+local _, PBLK = ...
+
 local saved -- becomes savedvariable PetBattleLogKeeperLog
 local frame = PetBattleLogKeeper -- the frame defined in XML
 frame.lastFight = {} -- table that contains the last battle, wiped in PET_BATTLE_OPENING_DONE
@@ -45,6 +46,13 @@ frame.startTime = nil -- time when a battle began (to track duration)
 frame.selectedLog = nil -- the index of the currently clicked/selected log
 -- watch for player forfeiting a match (playerForfeit is nil'ed during PET_BATTLE_OPENING_START)
 hooksecurefunc(C_PetBattles,"ForfeitGame",function() frame.playerForfeit=true end)
+
+PBLK.Defaults = {
+  AutoLog = true,
+  DontAutoLogPve = true,
+  AutoOpenWindow = false,
+  DontSaveFullLog = false,
+}
 
 -- event dispatch. example: when PLAYER_LOGIN fires, if frame.PLAYER_LOGIN exists, run it as a function
 frame:SetScript("OnEvent",function(self,event,...)
@@ -79,14 +87,12 @@ function frame:PLAYER_LOGIN()
   
   -- setup savedvar settings and values if they don't exist
   PetBattleLogKeeperSettings = PetBattleLogKeeperSettings or {}
-  settings = PetBattleLogKeeperSettings
-  local set_default = function(name, value)
-    if settings[name] == nil then settings[name] = value end
+  PBLK.Settings = PetBattleLogKeeperSettings
+  for name, value in pairs(PBLK.Defaults) do
+    if PBLK.Settings[name] == nil then
+      PBLK.Settings[name] = value
+    end
   end
-  set_default("AutoLog", true)
-  set_default("DontAutoLogPve", true)
-  set_default("AutoOpenWindow", false)
-  set_default("DontSaveFullLog", false)
 
   frame:WipeLastFight()
   frame.TitleText:SetText("Pet Battle Log Keeper")
@@ -155,7 +161,7 @@ end
 -- every line in the pet battle combat tab is from a CHAT_MSG_PET_BATTLE_COMBAT_LOG
 -- this will copy the line to the lastFight table
 function frame:CHAT_MSG_PET_BATTLE_COMBAT_LOG(msg)
-  if not settings.DontSaveFullLog then
+  if not PBLK.Settings.DontSaveFullLog then
     tinsert(frame.lastFight["log"],msg)
   end
 end
@@ -202,12 +208,12 @@ function frame:PET_BATTLE_FINAL_ROUND(winner)
     frame.lastFight["meta"][5] = true -- match was a forfeit
   if frame.playerForfeit then
     frame.lastFight["meta"][4] = "Loss" -- player forfeit match in progress, mark as loss
-    if not settings.DontSaveFullLog then
+    if not PBLK.Settings.DontSaveFullLog then
       tinsert(frame.lastFight["log"],"Player forfeits.")
     end
   else
     frame.lastFight["meta"][4] = "Win" -- opponent forfeit match in progress, mark as win
-    if not settings.DontSaveFullLog then
+    if not PBLK.Settings.DontSaveFullLog then
       tinsert(frame.lastFight["log"],"Opponent forfeits.")
     end
   end
@@ -217,9 +223,9 @@ function frame:PET_BATTLE_FINAL_ROUND(winner)
         frame.lastFight["meta"][4] = "Loss"
     end
   end
-  if settings.AutoLog and (not settings.DontAutoLogPve or isPvp) then
+  if PBLK.Settings.AutoLog and (not PBLK.Settings.DontAutoLogPve or isPvp) then
     tinsert(saved,1,CopyTable(frame.lastFight))
-  elseif settings.AutoOpenWindow then
+  elseif PBLK.Settings.AutoOpenWindow then
     frame:SetShown(true)
     frame:UpdateUI()
   end
@@ -236,11 +242,11 @@ function frame:UpdateUI()
       if not frame.selectedLog then
           frame.LogFrame:Hide()
           frame.ListFrame:SetPoint("BOTTOMRIGHT",-6,26) -- stretch ListFrame to cover LogFrame
-      elseif not settings.DontSaveFullLog then -- if a log selected and logs are being kept, show log frame
+      elseif not PBLK.Settings.DontSaveFullLog then -- if a log selected and logs are being kept, show log frame
          local logWasVIsible = frame.LogFrame:IsVisible()
          frame.LogFrame:Show()
          frame.ListFrame:SetPoint("BOTTOMRIGHT",frame,"TOPRIGHT",-6,-152) -- bring ListFrame up to just four rows (change -152 to other values to give it more room)
-      elseif settings.DontSaveFullLog then --if log selected and no logs are being kept, still show top rows
+      elseif PBLK.Settings.DontSaveFullLog then --if log selected and no logs are being kept, still show top rows
          frame.LogFrame:Show()
          frame.ListFrame:SetPoint("BOTTOMRIGHT",-6,120)-- just show the summary
       end
