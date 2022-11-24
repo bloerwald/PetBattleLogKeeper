@@ -193,7 +193,7 @@
             </Anchors>
             <Frames>
                <ScrollFrame parentKey="ScrollFrame" name="PetBattleLogKeeperScrollFrame" inherits="UIPanelScrollFrameTemplate">
-                  <Size x="500" height="500"/> <!-- make this width 40 less than parent frame width -->
+                  <Size x="500" y="500"/> <!-- make this width 40 less than parent frame width -->
                   <Anchors>
                      <Anchor point="TOPLEFT" x="4" y="-4"/>
                      <Anchor point="BOTTOMRIGHT" x="-4" y="4"/>
