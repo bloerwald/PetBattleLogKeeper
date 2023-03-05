@@ -55,8 +55,14 @@ local loc = {
   AUTO_LOG_TOOLTIP = 'Automatically save logs for battles. You need to manually click "' .. frame.SaveButton:GetText() .. '" in the UI otherwise.',
   DONT_AUTO_LOG_PVE_TEXT = "Don't auto-save PVE",
   DONT_AUTO_LOG_PVE_TOOLTIP = "Don't save PVE battles automatically.",
-  AUTO_OPEN_TEXT = "Open window for unsaved",
-  AUTO_OPEN_TOOLTIP = "Open log window automatically for unsaved battles.",
+  AUTO_OPEN_TEXT = "Open window after fight",
+  AUTO_OPEN_TOOLTIP = 'Automatically open ' .. HUMAN_READABLE_ADDON_NAME .. ' window after pet battle ends.',
+  AUTO_OPEN_CHOICE_ALWAYS = 'Always',
+  AUTO_OPEN_CHOICE_ALWAYS_TOOLTIP = 'Open window after very pet battle.',
+  AUTO_OPEN_CHOICE_NEVER = 'Never',
+  AUTO_OPEN_CHOICE_NEVER_TOOLTIP = 'Never open window automatically.',
+  AUTO_OPEN_CHOICE_UNSAVED = 'Unsaved fight',
+  AUTO_OPEN_CHOICE_UNSAVED_TOOLTIP = 'Open window automatically, if there is an unsaved log.',
   DONT_SAVE_FULL_LOG_TEXT = "Don't save full log",
   DONT_SAVE_FULL_LOG_TOOLTIP = "This will save memory if you don't care about the log details and log a lot of battles. This does not modify existing saved battles.",
   TOGGLE_WINDOW = "Toggle Window",
@@ -241,9 +247,11 @@ function frame:PET_BATTLE_FINAL_ROUND(winner)
         frame.lastFight["meta"][4] = loc.LOG_OUTCOME_LOSS
     end
   end
-  if PetBattleLogKeeperSettings.AutoLog and (not PetBattleLogKeeperSettings.DontAutoLogPve or isPvp) then
+  local doAutoLog = PetBattleLogKeeperSettings.AutoLog and (not PetBattleLogKeeperSettings.DontAutoLogPve or isPvp)
+  if doAutoLog then
     tinsert(saved,1,CopyTable(frame.lastFight))
-  elseif PetBattleLogKeeperSettings.AutoOpenWindow then
+  end
+  if (doAutoLog and PetBattleLogKeeperSettings.AutoOpenWindow > 0) or PetBattleLogKeeperSettings.AutoOpenWindow > 1 then
     frame:SetShown(true)
     frame:UpdateUI()
   end
@@ -555,5 +563,18 @@ function frame:SetupSettings()
 
   layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(loc.SETTINGS_SECTION_UI));
 
-  AddBoolean("AutoOpenWindow", Settings.Default.False, loc.AUTO_OPEN_TEXT, loc.AUTO_OPEN_TOOLTIP)
+  if type(PetBattleLogKeeperSettings.AutoOpenWindow) == 'boolean' then
+    PetBattleLogKeeperSettings.AutoOpenWindow = PetBattleLogKeeperSettings.AutoOpenWindow and 1 or 0
+  end
+
+  local function AutoOpenOptions()
+    local container = Settings.CreateControlTextContainer();
+    container:Add(0, loc.AUTO_OPEN_CHOICE_NEVER, loc.AUTO_OPEN_CHOICE_NEVER_TOOLTIP);
+    container:Add(1, loc.AUTO_OPEN_CHOICE_UNSAVED, loc.AUTO_OPEN_CHOICE_UNSAVED_TOOLTIP);
+    container:Add(2, loc.AUTO_OPEN_CHOICE_ALWAYS, loc.AUTO_OPEN_CHOICE_ALWAYS_TOOLTIP);
+    return container:GetData();
+  end
+
+  local settingAutoOpen = CreateSetting('AutoOpenWindow', Settings.VarType.Number, 0, loc.AUTO_OPEN_TEXT)
+  ConfigureInitializer(Settings.CreateDropDown(category, settingAutoOpen, AutoOpenOptions, loc.AUTO_OPEN_TOOLTIP))
 end
