@@ -257,7 +257,10 @@ function frame:UpdateUI()
       frame:UpdateList()
       frame:UpdateButtons()
       -- if no log selected (or logs not being saved), hide the log frame and extend list to whole height
-      if not frame.selectedLog then
+      if frame.LogFrame.ForceOpen then
+         frame.LogFrame:Show()
+         frame.ListFrame:SetPoint("BOTTOMRIGHT",-6,120)-- just show the summary
+      elseif not frame.selectedLog then
           frame.LogFrame:Hide()
           frame.ListFrame:SetPoint("BOTTOMRIGHT",-6,26) -- stretch ListFrame to cover LogFrame
       elseif not PetBattleLogKeeperSettings.DontSaveFullLog then -- if a log selected and logs are being kept, show log frame
@@ -341,12 +344,14 @@ end
 function frame:DisplayLogByIndex(index)
    local editBox = frame.LogFrame.ScrollFrame.EditBox
    editBox:SetText("") -- wipe anything that previously in the editbox
+   frame.LogFrame.ForceOpen = false
 
    local log = saved[index]
    
    if not log then -- if indexed log doesn't exist (probably 0 and there are no logs)
       -- display help text instead of a log
       editBox:Insert(loc.HELP_TEXT)
+      frame.LogFrame.ForceOpen = true
    else -- if log exists, toss log into the editbox
       -- at start of display, list pets used and a long-form summary
       editBox:Insert(format(loc.LOG_YOUR_PETS .. "\n",frame:GetPetsAsText(log["pets"][1],log["pets"][2],log["pets"][3])))
