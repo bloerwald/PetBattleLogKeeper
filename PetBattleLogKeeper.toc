@@ -4,5 +4,3 @@
 ## SavedVariables: PetBattleLogKeeperLogs, PetBattleLogKeeperSettings
 PetBattleLogKeeper.xml
 PetBattleLogKeeper.lua
-PetBattleLogKeeperOptions.xml
-PetBattleLogKeeperOptions.lua

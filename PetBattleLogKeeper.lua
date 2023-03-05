@@ -36,7 +36,8 @@
 
 ]]
 
-local _, PBLK = ...
+local ADDON_NAME, _ = ...
+local HUMAN_READABLE_ADDON_NAME = GetAddOnMetadata(ADDON_NAME, "Title")
 
 local saved -- becomes savedvariable PetBattleLogKeeperLog
 local frame = PetBattleLogKeeper -- the frame defined in XML
@@ -47,11 +48,17 @@ frame.selectedLog = nil -- the index of the currently clicked/selected log
 -- watch for player forfeiting a match (playerForfeit is nil'ed during PET_BATTLE_OPENING_START)
 hooksecurefunc(C_PetBattles,"ForfeitGame",function() frame.playerForfeit=true end)
 
-PBLK.Defaults = {
-  AutoLog = true,
-  DontAutoLogPve = true,
-  AutoOpenWindow = false,
-  DontSaveFullLog = false,
+local loc = {
+  SETTINGS_SECTION_FIGHTS = 'Fights',
+  SETTINGS_SECTION_UI = 'Interface',
+  AUTO_LOG_TEXT = 'Save battles automatically',
+  AUTO_LOG_TOOLTIP = 'Automatically save logs for battles. You need to manually click "' .. frame.SaveButton:GetText() .. '" in the UI otherwise.',
+  DONT_AUTO_LOG_PVE_TEXT = "Don't auto-save PVE",
+  DONT_AUTO_LOG_PVE_TOOLTIP = "Don't save PVE battles automatically.",
+  AUTO_OPEN_TEXT = "Open window for unsaved",
+  AUTO_OPEN_TOOLTIP = "Open log window automatically for unsaved battles.",
+  DONT_SAVE_FULL_LOG_TEXT = "Don't save full log",
+  DONT_SAVE_FULL_LOG_TOOLTIP = "This will save memory if you don't care about the log details and log a lot of battles. This does not modify existing saved battles.",
 }
 
 -- event dispatch. example: when PLAYER_LOGIN fires, if frame.PLAYER_LOGIN exists, run it as a function
@@ -87,12 +94,7 @@ function frame:PLAYER_LOGIN()
   
   -- setup savedvar settings and values if they don't exist
   PetBattleLogKeeperSettings = PetBattleLogKeeperSettings or {}
-  PBLK.Settings = PetBattleLogKeeperSettings
-  for name, value in pairs(PBLK.Defaults) do
-    if PBLK.Settings[name] == nil then
-      PBLK.Settings[name] = value
-    end
-  end
+  frame:SetupSettings()
 
   frame:WipeLastFight()
   frame.TitleText:SetText("Pet Battle Log Keeper")
@@ -161,7 +163,7 @@ end
 -- every line in the pet battle combat tab is from a CHAT_MSG_PET_BATTLE_COMBAT_LOG
 -- this will copy the line to the lastFight table
 function frame:CHAT_MSG_PET_BATTLE_COMBAT_LOG(msg)
-  if not PBLK.Settings.DontSaveFullLog then
+  if not PetBattleLogKeeperSettings.DontSaveFullLog then
     tinsert(frame.lastFight["log"],msg)
   end
 end
@@ -208,12 +210,12 @@ function frame:PET_BATTLE_FINAL_ROUND(winner)
     frame.lastFight["meta"][5] = true -- match was a forfeit
   if frame.playerForfeit then
     frame.lastFight["meta"][4] = "Loss" -- player forfeit match in progress, mark as loss
-    if not PBLK.Settings.DontSaveFullLog then
+    if not PetBattleLogKeeperSettings.DontSaveFullLog then
       tinsert(frame.lastFight["log"],"Player forfeits.")
     end
   else
     frame.lastFight["meta"][4] = "Win" -- opponent forfeit match in progress, mark as win
-    if not PBLK.Settings.DontSaveFullLog then
+    if not PetBattleLogKeeperSettings.DontSaveFullLog then
       tinsert(frame.lastFight["log"],"Opponent forfeits.")
     end
   end
@@ -223,9 +225,9 @@ function frame:PET_BATTLE_FINAL_ROUND(winner)
         frame.lastFight["meta"][4] = "Loss"
     end
   end
-  if PBLK.Settings.AutoLog and (not PBLK.Settings.DontAutoLogPve or isPvp) then
+  if PetBattleLogKeeperSettings.AutoLog and (not PetBattleLogKeeperSettings.DontAutoLogPve or isPvp) then
     tinsert(saved,1,CopyTable(frame.lastFight))
-  elseif PBLK.Settings.AutoOpenWindow then
+  elseif PetBattleLogKeeperSettings.AutoOpenWindow then
     frame:SetShown(true)
     frame:UpdateUI()
   end
@@ -242,11 +244,10 @@ function frame:UpdateUI()
       if not frame.selectedLog then
           frame.LogFrame:Hide()
           frame.ListFrame:SetPoint("BOTTOMRIGHT",-6,26) -- stretch ListFrame to cover LogFrame
-      elseif not PBLK.Settings.DontSaveFullLog then -- if a log selected and logs are being kept, show log frame
-         local logWasVIsible = frame.LogFrame:IsVisible()
+      elseif not PetBattleLogKeeperSettings.DontSaveFullLog then -- if a log selected and logs are being kept, show log frame
          frame.LogFrame:Show()
          frame.ListFrame:SetPoint("BOTTOMRIGHT",frame,"TOPRIGHT",-6,-152) -- bring ListFrame up to just four rows (change -152 to other values to give it more room)
-      elseif PBLK.Settings.DontSaveFullLog then --if log selected and no logs are being kept, still show top rows
+      elseif PetBattleLogKeeperSettings.DontSaveFullLog then --if log selected and no logs are being kept, still show top rows
          frame.LogFrame:Show()
          frame.ListFrame:SetPoint("BOTTOMRIGHT",-6,120)-- just show the summary
       end
@@ -488,4 +489,50 @@ function frame.ResizeGrip:OnMouseUp()
    frame.isResizing = nil
    frame:StopMovingOrSizing()
    frame:SetUserPlaced(true)
+end
+
+--[[ Settings ]]
+
+function frame:SetupSettings()
+  local category, layout = Settings.RegisterVerticalLayoutCategory(HUMAN_READABLE_ADDON_NAME)
+  Settings.RegisterAddOnCategory(category)
+
+  local CreateSetting = function(variable, varType, default, name)
+    local globalDummyVariable = '_global_dummy_PetBattleLogKeeperSettings_' .. variable
+    local setting = Settings.RegisterAddOnSetting(category, name, globalDummyVariable, varType, default)
+
+    Settings.SetOnValueChangedCallback(globalDummyVariable, function(event) PetBattleLogKeeperSettings[variable] = setting:GetValue() end)
+
+    if PetBattleLogKeeperSettings[variable] == nil then
+      PetBattleLogKeeperSettings[variable] = default
+    end
+    setting:SetValue(PetBattleLogKeeperSettings[variable])
+
+    return setting
+  end
+
+  local ConfigureInitializer = function(initializer)
+    initializer:AddSearchTags(HUMAN_READABLE_ADDON_NAME)
+    initializer:AddSearchTags('pblk')
+    return initializer
+  end
+
+  local AddBoolean = function(variable, default, name, tooltip)
+    local setting = CreateSetting(variable, Settings.VarType.Boolean, default, name)
+    local initializer = Settings.CreateCheckBox(category, setting, tooltip)
+    return ConfigureInitializer(initializer)
+  end
+
+  layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(loc.SETTINGS_SECTION_FIGHTS));
+
+  local autoLogInitializer = AddBoolean("AutoLog", Settings.Default.True, loc.AUTO_LOG_TEXT, loc.AUTO_LOG_TOOLTIP)
+
+  local dontAutoLogPveInitializer = AddBoolean("DontAutoLogPve", Settings.Default.True, loc.DONT_AUTO_LOG_PVE_TEXT, loc.DONT_AUTO_LOG_PVE_TOOLTIP)
+  dontAutoLogPveInitializer:SetParentInitializer(autoLogInitializer, function() return PetBattleLogKeeperSettings.AutoLog end)
+
+  AddBoolean("DontSaveFullLog", Settings.Default.False, loc.DONT_SAVE_FULL_LOG_TEXT, loc.DONT_SAVE_FULL_LOG_TOOLTIP)
+
+  layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(loc.SETTINGS_SECTION_UI));
+
+  AddBoolean("AutoOpenWindow", Settings.Default.False, loc.AUTO_OPEN_TEXT, loc.AUTO_OPEN_TOOLTIP)
 end
