@@ -28,7 +28,7 @@
             [1]: timestamp (string)
             [2]: duration (number)
             [3]: number of rounds (number)
-            [4]: result of battle (string): "Win" "Loss" or "Draw"
+            [4]: result of battle (string): loc.LOG_OUTCOME_WIN loc.LOG_OUTCOME_LOSS or loc.LOG_OUTCOME_DRAW
             [5]: Match was forfeited by loser (bool)
           log = 
             [1] to end: each combat log message is its own line in the table
@@ -59,6 +59,22 @@ local loc = {
   AUTO_OPEN_TOOLTIP = "Open log window automatically for unsaved battles.",
   DONT_SAVE_FULL_LOG_TEXT = "Don't save full log",
   DONT_SAVE_FULL_LOG_TOOLTIP = "This will save memory if you don't care about the log details and log a lot of battles. This does not modify existing saved battles.",
+  TOGGLE_WINDOW = "Toggle Window",
+
+  LOG_OUTCOME_WIN = 'Win',
+  LOG_OUTCOME_LOSS = 'Loss',
+  LOG_OUTCOME_DRAW = 'Draw',
+  LOG_FULL_PLAYER_FORFEITS = 'Player forfeits.',
+  LOG_FULL_OPPONENT_FORFEITS = 'Opponent forfeits.',
+  LOG_YOUR_PETS = 'Your pets: %s',
+  LOG_OPPONENT_PETS = 'Opponent: %s',
+  LOG_FORFEIT_SUFFIX = " (Forfeit)",
+  LOG_TYPE_PVP = 'PVP',
+  LOG_TYPE_PVE = 'PVE',
+  LOG_SUMMARY = 'This %s battle happened on %s, lasted %s over %d rounds, and resulted in a %s%s.', -- TYPE_x, timestamp, duration, rounds, LOG_OUTCOME_, LOG_FORFEIT_SUFFIX or ''
+
+  CONFIRM_DELETE = "Are you sure you want to delete this pet battle log?",
+  HELP_TEXT = "After you leave a pet battle, click '" .. frame.SaveButton:GetText() .. "' to store the battle you just left. You can enable automatically saving battle logs in the settings.\n\nClicking any saved battle in the above list will display its log here.",
 }
 
 -- event dispatch. example: when PLAYER_LOGIN fires, if frame.PLAYER_LOGIN exists, run it as a function
@@ -71,8 +87,8 @@ frame:RegisterEvent("PLAYER_LOGIN")
 
 --[[ Bindings/Slash Command ]]
 
-BINDING_HEADER_PETBATTLELOGKEEPER = "Pet Battle Log Keeper"
-BINDING_NAME_PETBATTLELOGKEEPER_TOGGLE = "Toggle Window"
+BINDING_HEADER_PETBATTLELOGKEEPER = HUMAN_READABLE_ADDON_NAME
+BINDING_NAME_PETBATTLELOGKEEPER_TOGGLE = loc.TOGGLE_WINDOW
 
 -- called from Bindings.xml and slash command below
 function frame:Toggle()
@@ -97,7 +113,7 @@ function frame:PLAYER_LOGIN()
   frame:SetupSettings()
 
   frame:WipeLastFight()
-  frame.TitleText:SetText("Pet Battle Log Keeper")
+  frame.TitleText:SetText(HUMAN_READABLE_ADDON_NAME)
 
   -- setup scrollframe bits
   local scrollFrame = PetBattleLogKeeper.ListFrame.ScrollFrame
@@ -190,7 +206,7 @@ function frame:PET_BATTLE_FINAL_ROUND(winner)
   frame.lastFight["meta"][6] = isPvp 
 
   if winner==1 then -- player won
-    frame.lastFight["meta"][4] = "Win"
+    frame.lastFight["meta"][4] = loc.LOG_OUTCOME_WIN
   else -- player didn't win
     -- determine which sides have pets still alive
     local allyAlive,enemyAlive
@@ -209,20 +225,20 @@ function frame:PET_BATTLE_FINAL_ROUND(winner)
     if allyAlive and enemyAlive then -- both pets sides have a living pet, someone forfeit tsk tsk
     frame.lastFight["meta"][5] = true -- match was a forfeit
   if frame.playerForfeit then
-    frame.lastFight["meta"][4] = "Loss" -- player forfeit match in progress, mark as loss
+    frame.lastFight["meta"][4] = loc.LOG_OUTCOME_LOSS -- player forfeit match in progress, mark as loss
     if not PetBattleLogKeeperSettings.DontSaveFullLog then
-      tinsert(frame.lastFight["log"],"Player forfeits.")
+      tinsert(frame.lastFight["log"],locl.LOG_FULL_PLAYER_FORFEITS)
     end
   else
-    frame.lastFight["meta"][4] = "Win" -- opponent forfeit match in progress, mark as win
+    frame.lastFight["meta"][4] = loc.LOG_OUTCOME_WIN -- opponent forfeit match in progress, mark as win
     if not PetBattleLogKeeperSettings.DontSaveFullLog then
-      tinsert(frame.lastFight["log"],"Opponent forfeits.")
+      tinsert(frame.lastFight["log"],loc.LOG_FULL_OPPONENT_FORFEITS)
     end
   end
     elseif not allyAlive and not enemyAlive then -- pets on both sides are dead, it's a draw
-        frame.lastFight["meta"][4] = "Draw"
+        frame.lastFight["meta"][4] = loc.LOG_OUTCOME_DRAW
     else -- if player didn't win and all other causes exhausted, it was a loss :(
-        frame.lastFight["meta"][4] = "Loss"
+        frame.lastFight["meta"][4] = loc.LOG_OUTCOME_LOSS
     end
   end
   if PetBattleLogKeeperSettings.AutoLog and (not PetBattleLogKeeperSettings.DontAutoLogPve or isPvp) then
@@ -330,12 +346,12 @@ function frame:DisplayLogByIndex(index)
    
    if not log then -- if indexed log doesn't exist (probably 0 and there are no logs)
       -- display help text instead of a log
-      editBox:Insert("\nAfter you leave a pet battle, click 'Save Battle' to store the battle you just left.\n\nClicking any saved battle in the above list will display its log here.")
+      editBox:Insert(loc.HELP_TEXT)
    else -- if log exists, toss log into the editbox
       -- at start of display, list pets used and a long-form summary
-      editBox:Insert(format("Your pets: %s\n",frame:GetPetsAsText(log["pets"][1],log["pets"][2],log["pets"][3])))
-      editBox:Insert(format("Opponent: %s\n\n",frame:GetPetsAsText(log["pets"][4],log["pets"][5],log["pets"][6])))
-      editBox:Insert(format("This %s battle happened on %s, lasted %s over %d rounds, and resulted in a %s%s.\n\n", 
+      editBox:Insert(format(loc.LOG_YOUR_PETS .. "\n",frame:GetPetsAsText(log["pets"][1],log["pets"][2],log["pets"][3])))
+      editBox:Insert(format(loc.LOG_OPPONENT_PETS .. "\n\n",frame:GetPetsAsText(log["pets"][4],log["pets"][5],log["pets"][6])))
+      editBox:Insert(format(loc.LOG_SUMMARY .. "\n\n",
                             frame:GetIsPvp(log["meta"][6]),
                             log["meta"][1],
                             frame:GetDurationAsText(log["meta"][2]),
@@ -363,12 +379,12 @@ end
 
 --translates isPvp boolean variable into text for log window
 function frame:GetIsPvp(isPvp)
-  return isPvp == true and "PVP" or "PVE"
+  return isPvp == true and loc.LOG_TYPE_PVP or loc.LOG_TYPE_PVE
 end
 
 --translates isForfeit variable into text for log window
 function frame:GetIsForfeit(isForfeit)
-  return isForfeit == true and " (Forfeit)" or ""
+  return isForfeit == true and loc.LOG_FORFEIT_SUFFIX or ""
 end
 
 -- takes a variable number of speciesIDs and returns a string of the pets' icons and names separated by commas
@@ -438,7 +454,7 @@ function frame:DeleteButtonOnClick()
    if not StaticPopupDialogs.PETBATTLELOGKEEPER_DELETE then
       StaticPopupDialogs.PETBATTLELOGKEEPER_DELETE = {
          button1=YES, button2=NO, timeout=30, hideOnEscape=1, whileDead=1,
-         text="Are you sure you want to delete this pet battle log?",
+         text=loc.CONFIRM_DELETE,
       }
    end
    -- lazy closure sorry!
