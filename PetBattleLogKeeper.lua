@@ -233,7 +233,7 @@ function frame:PET_BATTLE_FINAL_ROUND(winner)
   if frame.playerForfeit then
     frame.lastFight["meta"][4] = loc.LOG_OUTCOME_LOSS -- player forfeit match in progress, mark as loss
     if not PetBattleLogKeeperSettings.DontSaveFullLog then
-      tinsert(frame.lastFight["log"],locl.LOG_FULL_PLAYER_FORFEITS)
+      tinsert(frame.lastFight["log"],loc.LOG_FULL_PLAYER_FORFEITS)
     end
   else
     frame.lastFight["meta"][4] = loc.LOG_OUTCOME_WIN -- opponent forfeit match in progress, mark as win
