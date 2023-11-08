@@ -1,4 +1,4 @@
-## Interface: 90205
+## Interface: 100200
 ## Title: Pet Battle Log Keeper
 ## Notes: This addon adds the /pblk command to save the log of the battle pet just fought
 ## SavedVariables: PetBattleLogKeeperLogs, PetBattleLogKeeperSettings
