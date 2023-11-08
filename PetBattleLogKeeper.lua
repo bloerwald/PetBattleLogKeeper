@@ -123,6 +123,8 @@ function frame:PLAYER_LOGIN()
 
   -- setup scrollframe bits
   local scrollFrame = PetBattleLogKeeper.ListFrame.ScrollFrame
+  -- HACK: scroll frame templates are bork using *both* spellings of the variable, so give it both variables.
+  scrollFrame.scrollBar = scrollFrame.ScrollBar
   scrollFrame.update = frame.UpdateList -- function to run when list needs updated
   scrollFrame.scrollBar.doNotHide = true
   HybridScrollFrame_CreateButtons(scrollFrame,"PetBattleLogKeeperListButtonTemplate")
