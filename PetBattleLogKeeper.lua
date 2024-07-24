@@ -550,7 +550,7 @@ function frame:SetupSettings()
 
   local AddBoolean = function(variable, default, name, tooltip)
     local setting = CreateSetting(variable, Settings.VarType.Boolean, default, name)
-    local initializer = Settings.CreateCheckBox(category, setting, tooltip)
+    local initializer = Settings.CreateCheckbox(category, setting, tooltip)
     return ConfigureInitializer(initializer)
   end
 
@@ -578,5 +578,5 @@ function frame:SetupSettings()
   end
 
   local settingAutoOpen = CreateSetting('AutoOpenWindow', Settings.VarType.Number, 0, loc.AUTO_OPEN_TEXT)
-  ConfigureInitializer(Settings.CreateDropDown(category, settingAutoOpen, AutoOpenOptions, loc.AUTO_OPEN_TOOLTIP))
+  ConfigureInitializer(Settings.CreateDropdown(category, settingAutoOpen, AutoOpenOptions, loc.AUTO_OPEN_TOOLTIP))
 end
