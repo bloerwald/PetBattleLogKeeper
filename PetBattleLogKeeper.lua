@@ -530,15 +530,7 @@ function frame:SetupSettings()
 
   local CreateSetting = function(variable, varType, default, name)
     local globalDummyVariable = '_global_dummy_PetBattleLogKeeperSettings_' .. variable
-    local setting = Settings.RegisterAddOnSetting(category, name, globalDummyVariable, varType, default)
-
-    Settings.SetOnValueChangedCallback(globalDummyVariable, function(event) PetBattleLogKeeperSettings[variable] = setting:GetValue() end)
-
-    if PetBattleLogKeeperSettings[variable] == nil then
-      PetBattleLogKeeperSettings[variable] = default
-    end
-    setting:SetValue(PetBattleLogKeeperSettings[variable])
-
+    local setting = Settings.RegisterAddOnSetting(category, globalDummyVariable, variable, PetBattleLogKeeperSettings, varType, name, default)
     return setting
   end
 
