@@ -37,7 +37,7 @@
 ]]
 
 local ADDON_NAME, _ = ...
-local HUMAN_READABLE_ADDON_NAME = GetAddOnMetadata(ADDON_NAME, "Title")
+local HUMAN_READABLE_ADDON_NAME = C_AddOns.GetAddOnMetadata(ADDON_NAME, "Title")
 
 local saved -- becomes savedvariable PetBattleLogKeeperLog
 local frame = PetBattleLogKeeper -- the frame defined in XML
