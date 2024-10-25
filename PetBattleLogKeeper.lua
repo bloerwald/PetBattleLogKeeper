@@ -66,6 +66,7 @@ local loc = {
   DONT_SAVE_FULL_LOG_TEXT = "Don't save full log",
   DONT_SAVE_FULL_LOG_TOOLTIP = "This will save memory if you don't care about the log details and log a lot of battles. This does not modify existing saved battles.",
   TOGGLE_WINDOW = "Toggle Window",
+  COPY_LOG = "Copy Log",
 
   LOG_OUTCOME_WIN = 'Win',
   LOG_OUTCOME_LOSS = 'Loss',
@@ -78,6 +79,14 @@ local loc = {
   LOG_TYPE_PVP = 'PVP',
   LOG_TYPE_PVE = 'PVE',
   LOG_SUMMARY = 'This %s battle happened on %s, lasted %s over %d rounds, and resulted in a %s%s.', -- TYPE_x, timestamp, duration, rounds, LOG_OUTCOME_, LOG_FORFEIT_SUFFIX or ''
+
+  LOG_BATTLE_HEADER = 'Battle %d:',
+  LOG_RESULT = 'Result: %s',
+  LOG_DURATION = 'Duration: %s',
+  LOG_TOTAL_ROUNDS = 'Total Rounds: %s',
+  LOG_TIMESTAMP = 'Timestamp: %s',
+  LOG_NO_TIMESTAMP = 'No Timestamp',
+  LOG_ROUNDS_TITLE = 'The Battle:',
 
   CONFIRM_DELETE = "Are you sure you want to delete this pet battle log?",
   HELP_TEXT = "After you leave a pet battle, click '" .. frame.SaveButton:GetText() .. "' to store the battle you just left. You can enable automatically saving battle logs in the settings.\n\nClicking any saved battle in the above list will display its log here.",
@@ -576,18 +585,18 @@ end
 -- Adding button to the frame so the whole battle log can be copied and saved somewhere else - ie in a word doc or so
 local copyButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
 copyButton:SetSize(80, 22)
-copyButton:SetText("Copy Log")
+copyButton:SetText(loc.COPY_LOG)
 copyButton:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 140, 4)
 
 copyButton:SetScript("OnClick", function()
-    frame:ShowLogInEditBox() -- Show the log in an editable box
+    frame:ShowLogInEditBox()
 end)
 
 function frame:ShowLogInEditBox()
    if not frame.EditBox then
        -- Create a ScrollFrame to hold the EditBox
        local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
-       scrollFrame:SetSize(380, 400)  -- Set the size of the ScrollFrame
+       scrollFrame:SetSize(380, 400)
        scrollFrame:SetPoint("CENTER", frame, "CENTER")
 
        -- Create the EditBox inside the ScrollFrame
@@ -596,15 +605,14 @@ function frame:ShowLogInEditBox()
        editBox:SetSize(370, 1000)  -- Set the height large enough to allow scrolling
        editBox:SetFontObject(ChatFontNormal)
        editBox:SetAutoFocus(true)
-       editBox:SetTextInsets(15, 15, 15, 15)  -- Adds 10 pixels padding on all sides (left, right, top, bottom)
+       editBox:SetTextInsets(15, 15, 15, 15)
 
-      -- Set frame strata and level for the EditBox
-      editBox:SetFrameStrata("DIALOG") -- Sets the strata to 'DIALOG'
-      editBox:SetFrameLevel(40) -- Sets the level to 10
+       editBox:SetFrameStrata("DIALOG")
+       editBox:SetFrameLevel(40)
 
        editBox:SetScript("OnEscapePressed", function(self)
            self:ClearFocus()  -- Lose focus when Esc is pressed
-           frame.EditBox:Hide()  -- Hide the EditBox
+           frame.EditBox:Hide()
            frame.ScrollFrame:Hide()  -- Hide the ScrollFrame (and the scrollbar)
        end)
 
@@ -649,7 +657,8 @@ function frame:GetFullLogText()
 
    -- Concatenate all logs, or just the selected log, into a single string
    for i, log in ipairs(PetBattleLogKeeperLogs) do
-       fullLogText = fullLogText .. format("Battle %d:\n%s\n", i, frame:GetFormattedLog(log))
+       fullLogText = fullLogText .. format(loc.LOG_BATTLE_HEADER, i) .. "\n"
+       fullLogText = fullLogText .. frame:GetFormattedLog(log) .. "\n"
    end
 
    return fullLogText
@@ -659,26 +668,18 @@ end
 function frame:GetFormattedLog(log)
    local logContent = ""
 
-   -- Add the timestamp at the beginning of the log
-   local timestamp = log.meta[1] or "No Timestamp"  -- Retrieve the timestamp from meta[1]
-   logContent = logContent .. format("Timestamp: %s\n", timestamp)
-
-   logContent = logContent .. format("Your Pets: %s\n", frame:GetPetsAsText(log.pets[1], log.pets[2], log.pets[3]))
-   logContent = logContent .. format("Opponent Pets: %s\n", frame:GetPetsAsText(log.pets[4], log.pets[5], log.pets[6]))
-
-   logContent = logContent .. format("Result: %s\n", frame:GetFullResult(log.meta[4], log.meta[5]))
-   logContent = logContent .. format("Duration: %s\n", frame:GetDurationAsText(log.meta[2]))
-   logContent = logContent .. format("Total Rounds: %s\n", frame:GetDurationAsText(log.meta[3]))
-
-   -- extra line between the battle and the results
+   local timestamp = log.meta[1] or loc.LOG_NO_TIMESTAMP
+   logContent = logContent .. format(loc.LOG_TIMESTAMP, timestamp) .. "\n"
+   logContent = logContent .. format(loc.LOG_YOUR_PETS, frame:GetPetsAsText(log.pets[1], log.pets[2], log.pets[3])) .. "\n"
+   logContent = logContent .. format(loc.LOG_OPPONENT_PETS, frame:GetPetsAsText(log.pets[4], log.pets[5], log.pets[6])) .. "\n"
+   logContent = logContent .. format(loc.LOG_RESULT, frame:GetFullResult(log.meta[4], log.meta[5])) .. "\n"
+   logContent = logContent .. format(loc.LOG_DURATION, frame:GetDurationAsText(log.meta[2])) .. "\n"
+   logContent = logContent .. format(loc.LOG_TOTAL_ROUNDS, frame:GetDurationAsText(log.meta[3])) .. "\n"
    logContent = logContent .. "\n"
+   logContent = logContent .. loc.LOG_ROUNDS_TITLE .. "\n"
 
-   -- title for the battle rounds
-   logContent = logContent .. "The Battle:\n"
-
-   -- Append log entries, adding a blank line before each round
    for _, entry in ipairs(log.log) do
-      if entry:find("Round") then
+      if entry:find(PET_BATTLE_COMBAT_LOG_NEW_ROUND) then
          logContent = logContent .. "\n"  -- Add a newline before the round
       end
       logContent = logContent .. entry .. "\n"
