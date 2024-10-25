@@ -572,3 +572,117 @@ function frame:SetupSettings()
   local settingAutoOpen = CreateSetting('AutoOpenWindow', Settings.VarType.Number, 0, loc.AUTO_OPEN_TEXT)
   ConfigureInitializer(Settings.CreateDropdown(category, settingAutoOpen, AutoOpenOptions, loc.AUTO_OPEN_TOOLTIP))
 end
+
+-- Adding button to the frame so the whole battle log can be copied and saved somewhere else - ie in a word doc or so
+local copyButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+copyButton:SetSize(80, 22)
+copyButton:SetText("Copy Log")
+copyButton:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 140, 4)
+
+copyButton:SetScript("OnClick", function()
+    frame:ShowLogInEditBox() -- Show the log in an editable box
+end)
+
+function frame:ShowLogInEditBox()
+   if not frame.EditBox then
+       -- Create a ScrollFrame to hold the EditBox
+       local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
+       scrollFrame:SetSize(380, 400)  -- Set the size of the ScrollFrame
+       scrollFrame:SetPoint("CENTER", frame, "CENTER")
+
+       -- Create the EditBox inside the ScrollFrame
+       local editBox = CreateFrame("EditBox", nil, scrollFrame, "BackdropTemplate")
+       editBox:SetMultiLine(true)
+       editBox:SetSize(370, 1000)  -- Set the height large enough to allow scrolling
+       editBox:SetFontObject(ChatFontNormal)
+       editBox:SetAutoFocus(true)
+       editBox:SetTextInsets(15, 15, 15, 15)  -- Adds 10 pixels padding on all sides (left, right, top, bottom)
+
+      -- Set frame strata and level for the EditBox
+      editBox:SetFrameStrata("DIALOG") -- Sets the strata to 'DIALOG'
+      editBox:SetFrameLevel(40) -- Sets the level to 10
+
+       editBox:SetScript("OnEscapePressed", function(self)
+           self:ClearFocus()  -- Lose focus when Esc is pressed
+           frame.EditBox:Hide()  -- Hide the EditBox
+           frame.ScrollFrame:Hide()  -- Hide the ScrollFrame (and the scrollbar)
+       end)
+
+       -- Set the backdrop for the EditBox to add a background
+       editBox:SetBackdrop({
+           bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",  -- Background texture
+           edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",    -- Border texture
+           tile = true, tileSize = 32, edgeSize = 32,
+           insets = { left = 8, right = 8, top = 8, bottom = 8 }
+       })
+       editBox:SetBackdropColor(0, 0, 0)  -- Black background
+       editBox:SetBackdropBorderColor(1, 1, 1)  -- White border
+
+       -- Link the EditBox to the ScrollFrame
+       scrollFrame:SetScrollChild(editBox)
+
+       -- Enable mouse wheel scrolling
+       scrollFrame:EnableMouseWheel(true)
+       scrollFrame:SetScript("OnMouseWheel", function(self, delta)
+           local current = self:GetVerticalScroll()
+           local maxScroll = self:GetVerticalScrollRange()
+           local newScroll = math.min(maxScroll, math.max(0, current - (delta * 30)))
+           self:SetVerticalScroll(newScroll)
+       end)
+
+       -- Save references for later use
+       frame.EditBox = editBox
+       frame.ScrollFrame = scrollFrame
+   end
+
+   -- Get the log text and display it in the EditBox
+   local logText = frame:GetFullLogText()  -- Function to get the full log as text
+   frame.EditBox:SetText(logText)
+   frame.EditBox:Show()
+   frame.ScrollFrame:Show()  -- Show ScrollFrame when displaying the log
+   frame.EditBox:HighlightText()  -- Automatically highlight the text for easy copying
+end
+
+-- Get the full log as a string
+function frame:GetFullLogText()
+   local fullLogText = ""
+
+   -- Concatenate all logs, or just the selected log, into a single string
+   for i, log in ipairs(PetBattleLogKeeperLogs) do
+       fullLogText = fullLogText .. format("Battle %d:\n%s\n", i, frame:GetFormattedLog(log))
+   end
+
+   return fullLogText
+end
+
+-- Helper function to format the log content
+function frame:GetFormattedLog(log)
+   local logContent = ""
+
+   -- Add the timestamp at the beginning of the log
+   local timestamp = log.meta[1] or "No Timestamp"  -- Retrieve the timestamp from meta[1]
+   logContent = logContent .. format("Timestamp: %s\n", timestamp)
+
+   logContent = logContent .. format("Your Pets: %s\n", frame:GetPetsAsText(log.pets[1], log.pets[2], log.pets[3]))
+   logContent = logContent .. format("Opponent Pets: %s\n", frame:GetPetsAsText(log.pets[4], log.pets[5], log.pets[6]))
+
+   logContent = logContent .. format("Result: %s\n", frame:GetFullResult(log.meta[4], log.meta[5]))
+   logContent = logContent .. format("Duration: %s\n", frame:GetDurationAsText(log.meta[2]))
+   logContent = logContent .. format("Total Rounds: %s\n", frame:GetDurationAsText(log.meta[3]))
+
+   -- extra line between the battle and the results
+   logContent = logContent .. "\n"
+
+   -- title for the battle rounds
+   logContent = logContent .. "The Battle:\n"
+
+   -- Append log entries, adding a blank line before each round
+   for _, entry in ipairs(log.log) do
+      if entry:find("Round") then
+         logContent = logContent .. "\n"  -- Add a newline before the round
+      end
+      logContent = logContent .. entry .. "\n"
+   end
+
+   return logContent
+end
