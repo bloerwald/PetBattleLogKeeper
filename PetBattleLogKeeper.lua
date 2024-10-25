@@ -293,6 +293,20 @@ function frame:UpdateUI()
    end
 end
 
+local petInfoBySpecies = {
+  __data = {},
+  __meta = {
+    __index = function(tab, key)
+      if tab.__data[key] == nil then
+        local name, icon = C_PetJournal.GetPetInfoBySpeciesID(key)
+        tab.__data[key] = {["name"] = name, ["icon"] = icon}
+      end
+      return tab.__data[key]
+    end
+  }
+}
+setmetatable(petInfoBySpecies, petInfoBySpecies.__meta)
+
 -- this runs when the HybridScrollFrame at the top of the window needs updated. this fills in pet icons,
 -- log summaries and marks the selected log
 function frame:UpdateList()
@@ -312,8 +326,7 @@ function frame:UpdateList()
           local speciesID = saved[index]["pets"][j]
           if speciesID then -- no guarantee team has 3 pets, don't show missing ones
               button.Pets[j]:Show()
-              local _,icon = C_PetJournal.GetPetInfoBySpeciesID(speciesID)
-              button.Pets[j]:SetTexture(icon)
+              button.Pets[j]:SetTexture(petInfoBySpecies[speciesID].icon)
           else
               button.Pets[j]:Hide()
           end
@@ -417,8 +430,8 @@ function frame:GetPetsAsText(...)
    for i=1,select("#",...) do
       local speciesID=select(i,...)
       if speciesID then
-         local name,icon = C_PetJournal.GetPetInfoBySpeciesID(speciesID)
-         tinsert(temp,format("\124T%s:14\124t %s",icon,name))
+         local info = petInfoBySpecies[speciesID]
+         tinsert(temp,format("\124T%s:14\124t %s",info.icon,info.name))
       end
    end
    return table.concat(temp,", ") or "<unknown>"
@@ -428,8 +441,7 @@ function frame:GetPetNamesAsText(...)
    for i=1,select("#",...) do
       local speciesID=select(i,...)
       if speciesID then
-         local name,_ = C_PetJournal.GetPetInfoBySpeciesID(speciesID)
-         tinsert(temp,name)
+         tinsert(temp,petInfoBySpecies[speciesID].name)
       end
    end
    return table.concat(temp,", ") or "<unknown>"
