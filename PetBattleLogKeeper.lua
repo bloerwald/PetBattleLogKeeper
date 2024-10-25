@@ -667,7 +667,7 @@ function frame:ShowLogInEditBox()
    end
 
    -- Get the log text and display it in the EditBox
-   local logText = frame:GetFullLogText()  -- Function to get the full log as text
+   local logText = frame:GetFullLogText(frame.EditBox:GetMaxBytes())  -- Function to get the full log as text
    frame.EditBox:SetText(logText)
    frame.EditBox:Show()
    frame.ScrollFrame:Show()  -- Show ScrollFrame when displaying the log
@@ -675,13 +675,17 @@ function frame:ShowLogInEditBox()
 end
 
 -- Get the full log as a string
-function frame:GetFullLogText()
+function frame:GetFullLogText(maxLength)
    local fullLogText = ""
 
    -- Concatenate all logs, or just the selected log, into a single string
    for i, log in ipairs(PetBattleLogKeeperLogs) do
        fullLogText = fullLogText .. format(loc.LOG_BATTLE_HEADER, i) .. "\n"
        fullLogText = fullLogText .. frame:GetFormattedLog(log) .. "\n"
+
+       if #fullLogText > maxLength then
+         break
+       end
    end
 
    return fullLogText
