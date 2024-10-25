@@ -286,11 +286,23 @@
                </OnClick>
             </Scripts>
          </Button>
+         <!-- CopyLogs Button -->
+         <Button parentKey="CopyLogsButton" inherits="MagicButtonTemplate" text="CopyLogs">
+            <Size x="128" y="22"/>
+            <Anchors>
+               <Anchor point="LEFT" relativeKey="$parent.DeleteButton" relativePoint="RIGHT" x="4" />
+            </Anchors>
+            <Scripts>
+               <OnClick>
+                  PetBattleLogKeeper:CopyLogsButtonOnClick()
+               </OnClick>
+            </Scripts>
+         </Button>
          <!-- Save Button -->
          <Button parentKey="SaveButton" inherits="MagicButtonTemplate" text="Save Battle">
-            <Size x="150" y="22"/>
+            <Size x="128" y="22"/>
             <Anchors>
-               <Anchor point="BOTTOM"/>
+               <Anchor point="LEFT" relativeKey="$parent.CopyLogsButton" relativePoint="RIGHT" x="4" />
             </Anchors>
             <Scripts>
                <OnClick>

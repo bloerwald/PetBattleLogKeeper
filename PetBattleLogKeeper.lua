@@ -66,7 +66,8 @@ local loc = {
   DONT_SAVE_FULL_LOG_TEXT = "Don't save full log",
   DONT_SAVE_FULL_LOG_TOOLTIP = "This will save memory if you don't care about the log details and log a lot of battles. This does not modify existing saved battles.",
   TOGGLE_WINDOW = "Toggle Window",
-  COPY_LOG = "Copy Log",
+  COPY_ALL_LOGS = "Copy All Logs",
+  COPY_THIS_LOG = "Copy This Log",
 
   LOG_OUTCOME_WIN = 'Win',
   LOG_OUTCOME_LOSS = 'Loss',
@@ -360,6 +361,8 @@ function frame:UpdateButtons()
    frame.DeleteButton:SetEnabled(saved[frame.selectedLog] and true)
    -- disable save button if a log isn't ready to save or the one ready to save isn't already saved
    frame.SaveButton:SetEnabled(frame.logReady and (not saved[1] or frame.lastFight["meta"][1]~=saved[1]["meta"][1]))
+
+   frame.CopyLogsButton:SetText(saved[frame.selectedLog] and loc.COPY_THIS_LOG or loc.COPY_ALL_LOGS)
 end
 
 -- wipes all data from the last fight and reinitializes the subtables
@@ -605,17 +608,11 @@ function frame:SetupSettings()
   ConfigureInitializer(Settings.CreateDropdown(category, settingAutoOpen, AutoOpenOptions, loc.AUTO_OPEN_TOOLTIP))
 end
 
--- Adding button to the frame so the whole battle log can be copied and saved somewhere else - ie in a word doc or so
-local copyButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-copyButton:SetSize(80, 22)
-copyButton:SetText(loc.COPY_LOG)
-copyButton:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 140, 4)
+function frame:CopyLogsButtonOnClick()
+    frame:ShowLogInEditBox(saved[frame.selectedLog])
+end
 
-copyButton:SetScript("OnClick", function()
-    frame:ShowLogInEditBox()
-end)
-
-function frame:ShowLogInEditBox()
+function frame:ShowLogInEditBox(maybeLog)
    if not frame.EditBox then
        -- Create a ScrollFrame to hold the EditBox
        local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
@@ -667,8 +664,7 @@ function frame:ShowLogInEditBox()
    end
 
    -- Get the log text and display it in the EditBox
-   local logText = frame:GetFullLogText(frame.EditBox:GetMaxBytes())  -- Function to get the full log as text
-   frame.EditBox:SetText(logText)
+   frame.EditBox:SetText(maybeLog and frame:GetFormattedLog(maybeLog) or frame:GetFullLogText(frame.EditBox:GetMaxBytes()))
    frame.EditBox:Show()
    frame.ScrollFrame:Show()  -- Show ScrollFrame when displaying the log
    frame.EditBox:HighlightText()  -- Automatically highlight the text for easy copying
