@@ -2,5 +2,10 @@
 ## Title: Pet Battle Log Keeper
 ## Notes: This addon adds the /pblk command to save the log of the battle pet just fought
 ## SavedVariables: PetBattleLogKeeperLogs, PetBattleLogKeeperSettings
+## Version: @project-version@
+## X-Build: @project-revision@
+## X-ReleaseDate: @project-date-iso@
+## X-Curse-Project-ID: 1128146
+## X-Wago-ID: RNL93E6o
 PetBattleLogKeeper.xml
 PetBattleLogKeeper.lua
