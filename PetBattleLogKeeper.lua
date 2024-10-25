@@ -709,7 +709,7 @@ function frame:GetFormattedLog(log)
       if entry:find(PET_BATTLE_COMBAT_LOG_NEW_ROUND) then
          logContent = logContent .. "\n"  -- Add a newline before the round
       end
-      logContent = logContent .. entry .. "\n"
+      logContent = logContent .. string.gsub(entry, "|T.-|t", "") .. "\n"
    end
 
    return logContent
