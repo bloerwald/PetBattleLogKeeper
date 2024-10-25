@@ -423,6 +423,17 @@ function frame:GetPetsAsText(...)
    end
    return table.concat(temp,", ") or "<unknown>"
 end
+function frame:GetPetNamesAsText(...)
+   local temp = {}
+   for i=1,select("#",...) do
+      local speciesID=select(i,...)
+      if speciesID then
+         local name,_ = C_PetJournal.GetPetInfoBySpeciesID(speciesID)
+         tinsert(temp,name)
+      end
+   end
+   return table.concat(temp,", ") or "<unknown>"
+end
 
 -- takes a duration in seconds and returns it in the format 00m 0s or 00s
 function frame:GetDurationAsText(duration)
@@ -670,8 +681,8 @@ function frame:GetFormattedLog(log)
 
    local timestamp = log.meta[1] or loc.LOG_NO_TIMESTAMP
    logContent = logContent .. format(loc.LOG_TIMESTAMP, timestamp) .. "\n"
-   logContent = logContent .. format(loc.LOG_YOUR_PETS, frame:GetPetsAsText(log.pets[1], log.pets[2], log.pets[3])) .. "\n"
-   logContent = logContent .. format(loc.LOG_OPPONENT_PETS, frame:GetPetsAsText(log.pets[4], log.pets[5], log.pets[6])) .. "\n"
+   logContent = logContent .. format(loc.LOG_YOUR_PETS, frame:GetPetNamesAsText(log.pets[1], log.pets[2], log.pets[3])) .. "\n"
+   logContent = logContent .. format(loc.LOG_OPPONENT_PETS, frame:GetPetNamesAsText(log.pets[4], log.pets[5], log.pets[6])) .. "\n"
    logContent = logContent .. format(loc.LOG_RESULT, frame:GetFullResult(log.meta[4], log.meta[5])) .. "\n"
    logContent = logContent .. format(loc.LOG_DURATION, frame:GetDurationAsText(log.meta[2])) .. "\n"
    logContent = logContent .. format(loc.LOG_TOTAL_ROUNDS, log.meta[3]) .. "\n"
