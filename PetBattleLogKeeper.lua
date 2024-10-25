@@ -674,7 +674,7 @@ function frame:GetFormattedLog(log)
    logContent = logContent .. format(loc.LOG_OPPONENT_PETS, frame:GetPetsAsText(log.pets[4], log.pets[5], log.pets[6])) .. "\n"
    logContent = logContent .. format(loc.LOG_RESULT, frame:GetFullResult(log.meta[4], log.meta[5])) .. "\n"
    logContent = logContent .. format(loc.LOG_DURATION, frame:GetDurationAsText(log.meta[2])) .. "\n"
-   logContent = logContent .. format(loc.LOG_TOTAL_ROUNDS, frame:GetDurationAsText(log.meta[3])) .. "\n"
+   logContent = logContent .. format(loc.LOG_TOTAL_ROUNDS, log.meta[3]) .. "\n"
    logContent = logContent .. "\n"
    logContent = logContent .. loc.LOG_ROUNDS_TITLE .. "\n"
 
