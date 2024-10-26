@@ -664,27 +664,32 @@ function frame:ShowLogInEditBox(maybeLog)
    end
 
    -- Get the log text and display it in the EditBox
-   frame.EditBox:SetText(maybeLog and frame:GetFormattedLog(maybeLog) or frame:GetFullLogText(frame.EditBox:GetMaxBytes()))
+   frame.EditBox:SetText(maybeLog and frame:GetFormattedLog(maybeLog) or frame:GetFullLogText())
    frame.EditBox:Show()
    frame.ScrollFrame:Show()  -- Show ScrollFrame when displaying the log
    frame.EditBox:HighlightText()  -- Automatically highlight the text for easy copying
 end
 
 -- Get the full log as a string
-function frame:GetFullLogText(maxLength)
+function frame:GetFullLogText()
    local fullLogText = ""
 
    -- Concatenate all logs, or just the selected log, into a single string
    for i, log in ipairs(PetBattleLogKeeperLogs) do
        fullLogText = fullLogText .. format(loc.LOG_BATTLE_HEADER, i) .. "\n"
        fullLogText = fullLogText .. frame:GetFormattedLog(log) .. "\n"
-
-       if #fullLogText > maxLength then
-         break
-       end
    end
 
    return fullLogText
+end
+
+local function stripColorsAndTextures(s)
+   local keepGoing = 1
+   while keepGoing > 0
+   do
+      s, keepGoing = string.gsub(s,"|c%x%x%x%x%x%x%x%x(.-)|r","%1")
+   end
+   return string.gsub(s, "|T.-|t", "")
 end
 
 -- Helper function to format the log content
@@ -705,7 +710,7 @@ function frame:GetFormattedLog(log)
       if entry:find(PET_BATTLE_COMBAT_LOG_NEW_ROUND) then
          logContent = logContent .. "\n"  -- Add a newline before the round
       end
-      logContent = logContent .. string.gsub(entry, "|T.-|t", "") .. "\n"
+      logContent = logContent .. stripColorsAndTextures(entry) .. "\n"
    end
 
    return logContent
